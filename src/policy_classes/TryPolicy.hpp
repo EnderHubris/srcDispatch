@@ -19,6 +19,7 @@
 
 #include <BlockPolicy.hpp>
 #include <CatchPolicy.hpp>
+#include <InitPolicy.hpp>
 
 #include <string>
 #include <vector>
@@ -30,6 +31,7 @@ namespace srcDispatch {
 
         DeltaElement<std::shared_ptr<BlockData>> block;
         std::vector<DeltaElement<std::any>>     clauses;
+        DeltaElement<std::shared_ptr<InitData>>  init;
     };
 
     class TryPolicy :
@@ -42,6 +44,7 @@ namespace srcDispatch {
 
         std::unique_ptr<BlockPolicy> blockPolicy;
         std::unique_ptr<CatchPolicy> catchPolicy;
+        std::unique_ptr<InitPolicy>  initPolicy;
 
     public:
         TryPolicy(std::initializer_list<srcDispatch::PolicyListener *> listeners)
@@ -59,6 +62,8 @@ namespace srcDispatch {
                 data.block.Update(ctx.diffStack.back().operation, policy->Data<BlockData>());
             } else if(typeid(CatchPolicy) == typeid(*policy)) {
                 data.clauses.push_back(DeltaElement<std::any>(ctx.diffStack.back().operation, policy->Data<CatchData>()));
+            } else if(typeid(InitPolicy) == typeid(*policy)) {
+                data.init.Update(ctx.diffStack.back().operation, policy->Data<InitData>());
             } else {
                 throw srcDispatch::PolicyError(std::string("Unhandled Policy '") + typeid(*policy).name() + '\'');
             }
@@ -81,6 +86,7 @@ namespace srcDispatch {
                 data.endPosition   = ctx.endPosition;
                 CollectBlockHandlers();
                 CollectCatchHandlers();
+                CollectInitHandlers();
             };
 
             // end of policy
@@ -114,6 +120,18 @@ namespace srcDispatch {
                     catchPolicy = make_unique_policy<CatchPolicy>({this});
                 }
                 ctx.dispatcher->AddListenerDispatch(catchPolicy.get());
+            };
+        }
+
+        void CollectInitHandlers() {
+            using namespace srcDispatch;
+            openEventMap[ParserState::init] = [this](srcSAXEventContext& ctx) {
+                if(!depth) return; 
+
+                if(!initPolicy) {
+                    initPolicy = make_unique_policy<InitPolicy>({this});
+                }
+                ctx.dispatcher->AddListenerDispatch(initPolicy.get());
             };
         }
 
