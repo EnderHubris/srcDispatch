@@ -53,6 +53,9 @@ namespace srcDispatch {
         typedefdecl, userdefined, comment, annotation, condition, gotostmt, breakstmt, continuestmt, label, throwstmt,
         trystmt, catchstmt, dostmt, incr, decr, control, ifgroup, range, returnstmt,
 
+        // C# specific
+        using_stmt,
+
         // preprocessor
         cppinclude, cppdirective, cppfile,
 

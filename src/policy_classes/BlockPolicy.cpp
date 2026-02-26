@@ -22,6 +22,8 @@
 #include <TryPolicy.hpp>
 #include <ClassPolicy.hpp>
 
+#include <UsingStmtPolicy.hpp>
+
 namespace srcDispatch {
 
     BlockPolicy::BlockPolicy(std::initializer_list<srcDispatch::PolicyListener*> listeners)
@@ -69,6 +71,8 @@ namespace srcDispatch {
             data.cases.emplace_back(ctx.diffStack.back().operation, policy->Data<CaseData>());
         } else if(typeid(LabelPolicy) == typeid(*policy)) {
             data.labels.emplace_back(ctx.diffStack.back().operation, policy->Data<LabelData>());
+        } else if(typeid(UsingStmtPolicy) == typeid(*policy)) {
+            data.statements.emplace_back(ctx.diffStack.back().operation, policy->Data<UsingData>());
         } else {
             throw srcDispatch::PolicyError(std::string("Unhandled Policy '") + typeid(*policy).name() + '\'');
         }
@@ -94,6 +98,8 @@ namespace srcDispatch {
         CollectClassHandlers();
         CollectCaseHandlers();
         CollectLabelHandlers();
+
+        CollectUsingStmtHandlers();
     }
 
     template<typename type>
@@ -370,6 +376,18 @@ namespace srcDispatch {
                 labelPolicy = make_unique_policy<LabelPolicy>({this});
             }
             ctx.dispatcher->AddListenerDispatch(labelPolicy.get());
+        };
+    }
+
+    void BlockPolicy::CollectUsingStmtHandlers() {
+        using namespace srcDispatch;
+        openEventMap[ParserState::using_stmt] = [this](srcSAXEventContext& ctx) {
+            if(!depth) return;
+
+            if(!usingStmtPolicy) {
+                usingStmtPolicy = make_unique_policy<UsingStmtPolicy>({this});
+            }
+            ctx.dispatcher->AddListenerDispatch(usingStmtPolicy.get());
         };
     }
 

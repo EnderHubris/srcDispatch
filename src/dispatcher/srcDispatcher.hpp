@@ -407,6 +407,10 @@ namespace srcDispatch {
                     ++ctx.triggerField[ParserState::name];
                     DispatchEvent(ParserState::name, ElementState::open);
                 } },
+                { "using_stmt", [this]() {
+                    ++ctx.triggerField[ParserState::using_stmt];
+                    DispatchEvent(ParserState::using_stmt, ElementState::open);
+                } },
                 { "macro", [this]() {
                     ++ctx.triggerField[ParserState::macro];
                     DispatchEvent(ParserState::macro, ElementState::open);
@@ -709,6 +713,10 @@ namespace srcDispatch {
                 { "name", [this]() {
                     DispatchEvent(ParserState::name, ElementState::close);
                     --ctx.triggerField[ParserState::name];
+                } },    
+                { "using_stmt", [this]() {
+                    DispatchEvent(ParserState::using_stmt, ElementState::close);
+                    --ctx.triggerField[ParserState::using_stmt];
                 } },
                 { "macro", [this]() {
                     DispatchEvent(ParserState::macro, ElementState::close);
