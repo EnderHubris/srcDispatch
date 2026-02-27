@@ -24,6 +24,9 @@ project(srcDispatch)
 
 include(CTest)
 
+# create a target where an executable can added as a dependency
+add_custom_target(srcdispatch_tests)
+
 if(NOT WIN32)
     set(CMAKE_INSTALL_PREFIX "/usr/local/")
 endif()
@@ -52,3 +55,10 @@ include_directories(${SRCDISPATCH_INCLUDE_DIR})
 # Continue to src/test
 add_subdirectory(src)
 add_subdirectory(test)
+
+# custom make target to strictly test dispatcher test suite
+add_custom_target(test_srcdispatch
+    COMMAND ${CMAKE_CTEST_COMMAND} -L srcdispatch # only run ctest testcases with the srcdispatch label attached
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    DEPENDS srcdispatch_tests # ensure tests with the set label are built
+)

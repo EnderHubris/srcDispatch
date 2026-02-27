@@ -33,7 +33,14 @@ macro(add_unit_test TEST_FILE)
     add_executable(${TEST_NAME} ${TEST_FILE})
     target_link_libraries(${TEST_NAME} $<TARGET_OBJECTS:srcsax_static> $<TARGET_OBJECTS:srcdispatch> LibXml2::LibXml2 Boost::boost ${ARGN})
     add_test(NAME ${TEST_NAME} COMMAND $<TARGET_FILE:${TEST_NAME}>)
-    set_target_properties(${TEST_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+    set_target_properties(${TEST_NAME} PROPERTIES
+        LABELS "srcdispatch" # add special label to test executable
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    )
+    
+    # adds test executable as a dependency
+    add_dependencies(srcdispatch_tests ${TEST_NAME})
 
 endmacro()
 
