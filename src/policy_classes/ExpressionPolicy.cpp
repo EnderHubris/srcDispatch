@@ -12,6 +12,13 @@
 
 namespace srcDispatch {
 
+    ExpressionPolicy::ExpressionPolicy(std::initializer_list<srcDispatch::PolicyListener *> listeners)
+        : srcDispatch::PolicyDispatcher(listeners), data{} {
+        InitializeExpressionPolicyHandlers();
+    }
+
+    ExpressionPolicy::~ExpressionPolicy() {}
+
     std::string ExpressionData::ToString(srcDispatch::DiffOperation operation) const {
 
         std::string str = "";
@@ -64,8 +71,6 @@ namespace srcDispatch {
         return data;
     }
 
-    ExpressionPolicy::~ExpressionPolicy() {}
-
     void ExpressionPolicy::Notify(const PolicyDispatcher* policy, const srcDispatch::srcSAXEventContext& ctx) {
         if(typeid(NamePolicy) == typeid(*policy)) {
             data.expr.push_back(DeltaElement<std::any>(ctx.diffStack.back().operation, policy->Data<NameData>()));
@@ -75,6 +80,9 @@ namespace srcDispatch {
             data.expr.push_back(DeltaElement<std::any>(ctx.diffStack.back().operation, policy->Data<LiteralData>()));
         } else if(typeid(CallPolicy) == typeid(*policy)) {
             data.expr.push_back(DeltaElement<std::any>(ctx.diffStack.back().operation, policy->Data<CallData>()));
+        } else if(typeid(LambdaPolicy) == typeid(*policy)) {
+            std::cerr << "[!] Lambda Captured!\n";
+            data.expr.push_back(DeltaElement<std::any>(ctx.diffStack.back().operation, policy->Data<LambdaData>()));
         } else {
             throw srcDispatch::PolicyError(std::string("Unhandled Policy '") + typeid(*policy).name() + '\'');
         }
@@ -98,6 +106,7 @@ namespace srcDispatch {
             CollectCallHandlers();
             CollectOperatorHandlers();
             CollectLiteralHandlers();
+            CollectLambdaHandlers();
         };
 
         // end of policy
@@ -158,6 +167,18 @@ namespace srcDispatch {
                 literalPolicy = make_unique_policy<LiteralPolicy>({this});
             }
             ctx.dispatcher->AddListenerDispatch(literalPolicy.get());
+        };
+    }
+
+    void ExpressionPolicy::CollectLambdaHandlers() {
+        using namespace srcDispatch;
+        openEventMap[ParserState::lambda] = [this](srcSAXEventContext& ctx) {
+            if(!depth) return;
+
+            if(!lambdaPolicy) {
+                lambdaPolicy = make_unique_policy<LambdaPolicy>({this});
+            }
+            ctx.dispatcher->AddListenerDispatch(lambdaPolicy.get());
         };
     }
 

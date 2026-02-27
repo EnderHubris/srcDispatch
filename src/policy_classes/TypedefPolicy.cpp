@@ -13,6 +13,24 @@
 
 namespace srcDispatch {
 
+std::string TypedefData::ToString(srcDispatch::DiffOperation operation) const {
+    std::string str;
+    if(type) {
+        str += type.ToString(operation);
+    }
+
+    if(functionDecl) {
+        str += functionDecl.ToString(operation);
+    }
+
+    if(name) {
+        str += ' ';
+        str += name.ToString(operation);
+    }
+
+    return str;
+}
+
 TypedefPolicy::TypedefPolicy(std::initializer_list<srcDispatch::PolicyListener *> listeners)
     : srcDispatch::PolicyDispatcher(listeners), data{} {
     InitializeTypedefPolicyHandlers();

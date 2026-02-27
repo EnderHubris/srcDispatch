@@ -15,10 +15,11 @@
 #include <ElementData.hpp>
 #include <DeltaElement.hpp>
 
-#include <NamePolicy.hpp>
-#include <OperatorPolicy.hpp>
 #include <LiteralPolicy.hpp>
+#include <OperatorPolicy.hpp>
 #include <CallPolicy.hpp>
+#include <NamePolicy.hpp>
+#include <LambdaPolicy.hpp>
 
 #include <string>
 #include <vector>
@@ -33,6 +34,9 @@ namespace srcDispatch {
 
     struct NameData;
     class NamePolicy;
+
+    struct LambdaData;
+    class LambdaPolicy;
 
     // A vector of elements in the expression.
     // Names, operators, calls in the correct order.
@@ -62,13 +66,10 @@ namespace srcDispatch {
         std::unique_ptr<OperatorPolicy> operatorPolicy;
         std::unique_ptr<LiteralPolicy> literalPolicy;
         std::unique_ptr<CallPolicy> callPolicy;
+        std::unique_ptr<LambdaPolicy> lambdaPolicy;
 
     public:
-        ExpressionPolicy(std::initializer_list<srcDispatch::PolicyListener *> listeners)
-            : srcDispatch::PolicyDispatcher(listeners), data{} {
-            InitializeExpressionPolicyHandlers();
-        }
-
+        ExpressionPolicy(std::initializer_list<srcDispatch::PolicyListener *> listeners);
         ~ExpressionPolicy();
 
     protected:
@@ -82,6 +83,7 @@ namespace srcDispatch {
         void CollectNameHandlers();
         void CollectOperatorHandlers();
         void CollectLiteralHandlers();
+        void CollectLambdaHandlers();
     };
 
 }

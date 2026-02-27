@@ -26,7 +26,7 @@ namespace srcDispatch {
     struct FunctionData;
     class FunctionPolicy;
 
-     struct TypedefData : public ElementData {
+    struct TypedefData : public ElementData {
 
         DeltaElement<std::shared_ptr<TypeData>> type;
         DeltaElement<std::shared_ptr<NameData>> name;
@@ -37,23 +37,7 @@ namespace srcDispatch {
         template<class type>
         friend class DeltaElement;
     private:
-        std::string ToString(srcDispatch::DiffOperation operation) const {
-            std::string str;
-            if(type) {
-                str += type.ToString(operation);
-            }
-
-            if(functionDecl) {
-                str += functionDecl.ToString(operation);
-            }
-
-            if(name) {
-                str += ' ';
-                str += name.ToString(operation);
-            }
-
-            return str;
-        }
+        std::string ToString(srcDispatch::DiffOperation operation) const;
     };
 
     class TypedefPolicy :
