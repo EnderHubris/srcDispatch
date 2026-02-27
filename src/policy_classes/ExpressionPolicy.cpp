@@ -81,7 +81,6 @@ namespace srcDispatch {
         } else if(typeid(CallPolicy) == typeid(*policy)) {
             data.expr.push_back(DeltaElement<std::any>(ctx.diffStack.back().operation, policy->Data<CallData>()));
         } else if(typeid(LambdaPolicy) == typeid(*policy)) {
-            std::cerr << "[!] Lambda Captured!\n";
             data.expr.push_back(DeltaElement<std::any>(ctx.diffStack.back().operation, policy->Data<LambdaData>()));
         } else {
             throw srcDispatch::PolicyError(std::string("Unhandled Policy '") + typeid(*policy).name() + '\'');
