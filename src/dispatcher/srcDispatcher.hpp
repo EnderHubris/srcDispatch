@@ -419,6 +419,18 @@ namespace srcDispatch {
                     ++ctx.triggerField[ParserState::using_stmt];
                     DispatchEvent(ParserState::using_stmt, ElementState::open);
                 } },
+                { "foreach", [this]() {
+                    ++ctx.triggerField[ParserState::foreach];
+                    DispatchEvent(ParserState::foreach, ElementState::open);
+                } },
+                { "lock", [this]() {
+                    ++ctx.triggerField[ParserState::lock];
+                    DispatchEvent(ParserState::lock, ElementState::open);
+                } },
+                { "fixed", [this]() {
+                    ++ctx.triggerField[ParserState::fixed];
+                    DispatchEvent(ParserState::fixed, ElementState::open);
+                } },
                 { "macro", [this]() {
                     ++ctx.triggerField[ParserState::macro];
                     DispatchEvent(ParserState::macro, ElementState::open);
@@ -733,6 +745,18 @@ namespace srcDispatch {
                 { "using_stmt", [this]() {
                     DispatchEvent(ParserState::using_stmt, ElementState::close);
                     --ctx.triggerField[ParserState::using_stmt];
+                } },    
+                { "foreach", [this]() {
+                    DispatchEvent(ParserState::foreach, ElementState::close);
+                    --ctx.triggerField[ParserState::foreach];
+                } },    
+                { "lock", [this]() {
+                    DispatchEvent(ParserState::lock, ElementState::close);
+                    --ctx.triggerField[ParserState::lock];
+                } },    
+                { "fixed", [this]() {
+                    DispatchEvent(ParserState::fixed, ElementState::close);
+                    --ctx.triggerField[ParserState::fixed];
                 } },
                 { "macro", [this]() {
                     DispatchEvent(ParserState::macro, ElementState::close);

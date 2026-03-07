@@ -40,6 +40,8 @@ namespace srcDispatch {
     class TryPolicy;
 
     class UsingStmtPolicy;
+    class LockStmtPolicy;
+    class FixedStmtPolicy;
 
     class  ClassPolicy;
     struct ClassData;
@@ -84,6 +86,8 @@ namespace srcDispatch {
         std::unique_ptr<TryPolicy>      tryPolicy;
 
         std::unique_ptr<UsingStmtPolicy> usingStmtPolicy;
+        std::unique_ptr<LockStmtPolicy>  lockStmtPolicy;
+        std::unique_ptr<FixedStmtPolicy> fixedStmtPolicy;
 
         std::unique_ptr<SwitchPolicy>   switchPolicy;
         std::unique_ptr<CasePolicy>     casePolicy;
@@ -123,6 +127,8 @@ namespace srcDispatch {
         void CollectLabelHandlers();
 
         void CollectUsingStmtHandlers();
+        void CollectLockStmtHandlers();
+        void CollectFixedStmtHandlers();
 
         template<typename type>
         bool ConvertRegistrationCheck(srcDispatch::srcSAXEventContext& ctx);

@@ -1,5 +1,5 @@
-#ifndef INCLUDED_USING_STATEMENT_POLICY_HPP
-#define INCLUDED_USING_STATEMENT_POLICY_HPP
+#ifndef INCLUDED_STATEMENT_POLICY_HPP
+#define INCLUDED_STATEMENT_POLICY_HPP
 
 #include <srcSAXController.hpp>
 #include <srcDispatcher.hpp>
@@ -8,50 +8,44 @@
 #include <ElementData.hpp>
 #include <DeltaElement.hpp>
 
-#include <BlockPolicy.hpp>
 #include <InitPolicy.hpp>
+#include <BlockPolicy.hpp>
 
 #include <string>
 #include <vector>
 #include <iostream>
 
-/**
- * 
- * <using_stmt>
- *     <init> ... </init>
- *     <block> ... </block>
- * </using_stmt>
- * 
- */
-
 namespace srcDispatch {
 
-    struct UsingData : public ElementData {
+    struct StatementData : public ElementData {
 
         DeltaElement<std::shared_ptr<InitData>>  init;
         DeltaElement<std::shared_ptr<BlockData>> block;
+
+        template<class type>
+        friend class DeltaElement;
     };
 
-    class UsingStmtPolicy : 
+    template <typename StatementDataParam, srcDispatch::ParserState DispatchEvent>
+    class StatementPolicy :
     public srcDispatch::EventListener,
     public srcDispatch::PolicyDispatcher,
     public srcDispatch::PolicyListener {
-        
-    private:
-        UsingData data;
+
+    protected:
+        StatementDataParam data;
 
         std::unique_ptr<InitPolicy>      initPolicy;
         std::unique_ptr<BlockPolicy>     blockPolicy;
 
     public:
-        UsingStmtPolicy(std::initializer_list<srcDispatch::PolicyListener *> listeners)
+        StatementPolicy(std::initializer_list<srcDispatch::PolicyListener*> listeners)
             : srcDispatch::PolicyDispatcher(listeners), data{} {
-            InitializeUsingStmtPolicyHandlers();
+            InitializeStatementPolicyHandlers();
         }
-        ~UsingStmtPolicy(){}
 
     protected:
-        std::any DataInner() const override { return std::make_shared<UsingData>(data); }
+        std::any DataInner() const override { return std::make_shared<StatementDataParam>(data); }
 
         void Notify(const PolicyDispatcher* policy, const srcDispatch::srcSAXEventContext& ctx) {
             using namespace srcDispatch;
@@ -67,17 +61,17 @@ namespace srcDispatch {
             ctx.dispatcher->RemoveListener(nullptr);
         }
 
-        void NotifyWrite(const PolicyDispatcher* policy, srcDispatch::srcSAXEventContext& ctx) {}
-    
-    private:
-        void InitializeUsingStmtPolicyHandlers() {
+        void NotifyWrite(const PolicyDispatcher* policy [[maybe_unused]], srcDispatch::srcSAXEventContext& ctx [[maybe_unused]]) override {}
+
+        void InitializeStatementPolicyHandlers() {
+
             using namespace srcDispatch;
 
-            openEventMap[ParserState::using_stmt] = [this](srcSAXEventContext& ctx) {
+            openEventMap[DispatchEvent] = [this](srcSAXEventContext& ctx) {
                 if(depth) return;
 
                 depth = ctx.depth;
-                data = UsingData{};
+                data = StatementDataParam{};
                 data.startPosition = ctx.startPosition;
                 data.endPosition = ctx.endPosition;
                 CollectInitHandlers();
@@ -85,12 +79,12 @@ namespace srcDispatch {
             };
 
             // end of policy
-            closeEventMap[ParserState::using_stmt] = [this](srcSAXEventContext& ctx) {
+            closeEventMap[DispatchEvent] = [this](srcSAXEventContext& ctx) {
                 if(!depth || depth != ctx.depth) return ;
 
                 depth = 0;
                 NotifyAll(ctx);
-                InitializeUsingStmtPolicyHandlers();
+                InitializeStatementPolicyHandlers();
             };
         }
 
@@ -119,6 +113,6 @@ namespace srcDispatch {
         }
     };
 
-};
+}
 
 #endif

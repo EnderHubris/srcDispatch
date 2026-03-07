@@ -56,7 +56,7 @@ namespace srcDispatch {
         lambda, capture,
 
         // C# specific
-        using_stmt,
+        using_stmt, foreach, lock, fixed,
 
         // preprocessor
         cppinclude, cppdirective, cppfile,

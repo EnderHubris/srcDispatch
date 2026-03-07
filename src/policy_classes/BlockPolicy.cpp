@@ -22,7 +22,9 @@
 #include <TryPolicy.hpp>
 #include <ClassPolicy.hpp>
 
-#include <UsingStmtPolicy.hpp>
+#include <csharp/UsingStmtPolicy.hpp>
+#include <csharp/LockStmtPolicy.hpp>
+#include <csharp/FixedStmtPolicy.hpp>
 
 namespace srcDispatch {
 
@@ -65,7 +67,7 @@ namespace srcDispatch {
         } else if(typeid(ClassPolicy) == typeid(*policy)) {
             srcDispatch::DiffOperation operation = ctx.diffStack.back().isConvert? srcDispatch::COMMON : ctx.diffStack.back().operation;
             data.localClasses.emplace_back(operation, policy->Data<ClassData>());
-        }  else if(typeid(BlockPolicy) == typeid(*policy)) {
+        } else if(typeid(BlockPolicy) == typeid(*policy)) {
             data.blocks.emplace_back(ctx.diffStack.back().operation, policy->Data<BlockData>());
         } else if(typeid(CasePolicy) == typeid(*policy)) {
             data.cases.emplace_back(ctx.diffStack.back().operation, policy->Data<CaseData>());
@@ -73,6 +75,10 @@ namespace srcDispatch {
             data.labels.emplace_back(ctx.diffStack.back().operation, policy->Data<LabelData>());
         } else if(typeid(UsingStmtPolicy) == typeid(*policy)) {
             data.statements.emplace_back(ctx.diffStack.back().operation, policy->Data<UsingData>());
+        } else if(typeid(LockStmtPolicy) == typeid(*policy)) {
+            data.statements.emplace_back(ctx.diffStack.back().operation, policy->Data<LockData>());
+        } else if(typeid(FixedStmtPolicy) == typeid(*policy)) {
+            data.statements.emplace_back(ctx.diffStack.back().operation, policy->Data<FixedData>());
         } else {
             throw srcDispatch::PolicyError(std::string("Unhandled Policy '") + typeid(*policy).name() + '\'');
         }
@@ -100,6 +106,8 @@ namespace srcDispatch {
         CollectLabelHandlers();
 
         CollectUsingStmtHandlers();
+        CollectLockStmtHandlers();
+        CollectFixedStmtHandlers();
     }
 
     template<typename type>
@@ -326,7 +334,7 @@ namespace srcDispatch {
 
     void BlockPolicy::CollectGotoHandlers() {
         using namespace srcDispatch;
-         std::function<void(srcSAXEventContext& ctx)> startGoto = [this](srcSAXEventContext& ctx) {
+        std::function<void(srcSAXEventContext& ctx)> startGoto = [this](srcSAXEventContext& ctx) {
             if(!depth) return;
 
             if(!gotoPolicy) {
@@ -388,6 +396,30 @@ namespace srcDispatch {
                 usingStmtPolicy = make_unique_policy<UsingStmtPolicy>({this});
             }
             ctx.dispatcher->AddListenerDispatch(usingStmtPolicy.get());
+        };
+    }
+
+    void BlockPolicy::CollectLockStmtHandlers() {
+        using namespace srcDispatch;
+        openEventMap[ParserState::lock] = [this](srcSAXEventContext& ctx) {
+            if(!depth) return;
+
+            if(!lockStmtPolicy) {
+                lockStmtPolicy = make_unique_policy<LockStmtPolicy>({this});
+            }
+            ctx.dispatcher->AddListenerDispatch(lockStmtPolicy.get());
+        };
+    }
+
+    void BlockPolicy::CollectFixedStmtHandlers() {
+        using namespace srcDispatch;
+        openEventMap[ParserState::fixed] = [this](srcSAXEventContext& ctx) {
+            if(!depth) return;
+
+            if(!fixedStmtPolicy) {
+                fixedStmtPolicy = make_unique_policy<FixedStmtPolicy>({this});
+            }
+            ctx.dispatcher->AddListenerDispatch(fixedStmtPolicy.get());
         };
     }
 
