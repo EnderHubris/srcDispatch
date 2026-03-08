@@ -211,3 +211,16 @@ BOOST_AUTO_TEST_CASE(change_relativity_and_filename_reverse) {
     BOOST_TEST(runner.GetIncludeInfo().at(0)->path.GetModified() == "file.hpp");
     BOOST_TEST(runner.GetIncludeInfo().at(0).ToString() == "#include <include.hpp>|#include \"file.hpp\"");
 }
+
+
+BOOST_AUTO_TEST_CASE(include_macro_phrase) {
+
+    srcDispatch::DispatchRunner runner;
+    std::string src = R"(
+    #include REMOTE_INC
+    )";
+    runner.RunDispatcher({{src,src}});
+
+    BOOST_TEST(runner.GetIncludeInfo().size() == 1, "[!] Missing Include");
+    BOOST_TEST(runner.GetIncludeInfo().at(0).ToString() == "#include <>", "[!] Incorrect String");
+}
