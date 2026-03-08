@@ -122,3 +122,41 @@ BOOST_AUTO_TEST_CASE(block_delete_for) {
 
     BOOST_TEST(runner.GetFunctionInfo().at(0).ToString() == "void foo() {}");
 }
+
+BOOST_AUTO_TEST_CASE(foreach_common) {
+
+    srcDispatch::DispatchRunner runner("C#");
+    std::string src = R"(
+    class Program {
+        static void Main() {
+            foreach (var item in items) {
+                Console.WriteLine(item);
+            }
+        }
+    }
+    )";
+    runner.RunDispatcher({{src,src}});
+
+    BOOST_TEST(runner.GetClassInfo().size() == 1);
+    BOOST_TEST(runner.GetClassInfo().at(0)->methods.size() == 1);
+    BOOST_TEST(runner.GetClassInfo().at(0)->methods.at(0)->name.ToString() == "Main");
+    BOOST_TEST(runner.GetClassInfo().at(0)->methods.at(0)->block->statements.size() == 1, "[!] Missing Statements!");
+
+    const srcDispatch::ForData& data = *std::any_cast<std::shared_ptr<srcDispatch::ForData>>(
+        runner.GetClassInfo().at(0)->methods.at(0)->block->statements.at(0).GetElement()
+    );
+    BOOST_TEST(data.control->init->inits.size() == 1);
+    
+    {
+        const srcDispatch::DeclData& decl = *std::any_cast<std::shared_ptr<srcDispatch::DeclData>>(
+            data.control->init->inits.at(0).GetElement()
+        );
+        BOOST_TEST(decl.range->expr.size() == 1);
+
+        const srcDispatch::NameData& nameData = *std::any_cast<std::shared_ptr<srcDispatch::NameData>>(
+            decl.range->expr.at(0).GetElement()
+        );
+        BOOST_TEST(nameData.name.ToString() == "items");
+    }
+    BOOST_TEST(data.block->statements.size() == 1, "[!] Missing Statements!");
+}

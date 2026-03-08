@@ -82,9 +82,9 @@ namespace srcDispatch {
         void InitializeForPolicyHandlers() {
             using namespace srcDispatch;
 
-            openEventMap[ParserState::forstmt] = [this](srcSAXEventContext& ctx) {
+            std::function<void(srcSAXEventContext& ctx)> start = [this](srcSAXEventContext& ctx) {
                 if(depth) return;
-
+                
                 depth = ctx.depth;
                 data = ForData{};
                 data.startPosition = ctx.startPosition;
@@ -92,15 +92,19 @@ namespace srcDispatch {
                 CollectControlHandlers();
                 CollectBlockHandlers();
             };
-
+            openEventMap[ParserState::forstmt] = start;
+            openEventMap[ParserState::foreach] = start;
+            
             // end of policy
-            closeEventMap[ParserState::forstmt] = [this](srcSAXEventContext& ctx) {
+            std::function<void(srcSAXEventContext& ctx)> finish = [this](srcSAXEventContext& ctx) {
                 if(!depth || depth != ctx.depth) return;
 
                 depth = 0;
                 NotifyAll(ctx);
                 InitializeForPolicyHandlers();
             };
+            closeEventMap[ParserState::forstmt] = finish;
+            closeEventMap[ParserState::foreach] = finish;
         }
 
         void CollectControlHandlers() {

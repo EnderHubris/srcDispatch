@@ -277,23 +277,27 @@ namespace srcDispatch {
 
     void BlockPolicy::CollectForHandlers() {
         using namespace srcDispatch;
-        openEventMap[ParserState::forstmt] = [this](srcSAXEventContext& ctx) {
+        std::function<void(srcSAXEventContext& ctx)> start = [this](srcSAXEventContext& ctx) {
             if(!depth) return;
             if(ConvertRegistrationCheck<ForPolicy>(ctx)) return;
-
+            
             if(!forPolicy) {
                 forPolicy = make_unique_policy<ForPolicy>({this});
             }
             ctx.dispatcher->AddListenerDispatch(forPolicy.get());
         };
+        openEventMap[ParserState::forstmt] = start;
+        openEventMap[ParserState::foreach] = start;
 
-        closeEventMap[ParserState::forstmt] = [this](srcSAXEventContext& ctx) {
+        std::function<void(srcSAXEventContext& ctx)> finish = [this](srcSAXEventContext& ctx) {
             if(!depth) return;
-
+            
             if(plexer) {
                 plexer.reset();
             }
         };
+        closeEventMap[ParserState::forstmt] = finish;
+        closeEventMap[ParserState::foreach] = finish;
     }
 
     void BlockPolicy::CollectDoHandlers() {

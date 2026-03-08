@@ -261,6 +261,10 @@ namespace srcDispatch {
                     ++ctx.triggerField[ParserState::forstmt];
                     DispatchEvent(ParserState::forstmt, ElementState::open);
                 } },
+                { "foreach", [this]() {
+                    ++ctx.triggerField[ParserState::foreach];
+                    DispatchEvent(ParserState::foreach, ElementState::open);
+                } },
                 { "control", [this]() {
                     ++ctx.triggerField[ParserState::control];
                     DispatchEvent(ParserState::control, ElementState::open);
@@ -418,10 +422,6 @@ namespace srcDispatch {
                 { "using_stmt", [this]() {
                     ++ctx.triggerField[ParserState::using_stmt];
                     DispatchEvent(ParserState::using_stmt, ElementState::open);
-                } },
-                { "foreach", [this]() {
-                    ++ctx.triggerField[ParserState::foreach];
-                    DispatchEvent(ParserState::foreach, ElementState::open);
                 } },
                 { "lock", [this]() {
                     ++ctx.triggerField[ParserState::lock];
@@ -584,7 +584,11 @@ namespace srcDispatch {
                 { "for", [this]() {
                     DispatchEvent(ParserState::forstmt, ElementState::close);
                     --ctx.triggerField[ParserState::forstmt];
-                } },  
+                } },    
+                { "foreach", [this]() {
+                    DispatchEvent(ParserState::foreach, ElementState::close);
+                    --ctx.triggerField[ParserState::foreach];
+                } },
                 { "control", [this]() {
                     --ctx.triggerField[ParserState::control];
                     DispatchEvent(ParserState::control, ElementState::close);
@@ -745,11 +749,7 @@ namespace srcDispatch {
                 { "using_stmt", [this]() {
                     DispatchEvent(ParserState::using_stmt, ElementState::close);
                     --ctx.triggerField[ParserState::using_stmt];
-                } },    
-                { "foreach", [this]() {
-                    DispatchEvent(ParserState::foreach, ElementState::close);
-                    --ctx.triggerField[ParserState::foreach];
-                } },    
+                } },  
                 { "lock", [this]() {
                     DispatchEvent(ParserState::lock, ElementState::close);
                     --ctx.triggerField[ParserState::lock];
