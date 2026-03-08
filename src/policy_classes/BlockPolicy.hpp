@@ -43,6 +43,9 @@ namespace srcDispatch {
     class LockStmtPolicy;
     class FixedStmtPolicy;
 
+    class AssertPolicy;
+    class SyncStmtPolicy;
+
     class  ClassPolicy;
     struct ClassData;
 
@@ -83,7 +86,9 @@ namespace srcDispatch {
         std::unique_ptr<WhilePolicy>    whilePolicy;
         std::unique_ptr<DoPolicy>       doPolicy;
 
-        std::unique_ptr<TryPolicy>      tryPolicy;
+        std::unique_ptr<TryPolicy>          tryPolicy;
+        std::unique_ptr<AssertPolicy>       assertPolicy;
+        std::unique_ptr<SyncStmtPolicy>     syncStmtPolicy;
 
         std::unique_ptr<UsingStmtPolicy> usingStmtPolicy;
         std::unique_ptr<LockStmtPolicy>  lockStmtPolicy;
@@ -126,9 +131,8 @@ namespace srcDispatch {
         void CollectCaseHandlers();
         void CollectLabelHandlers();
 
-        void CollectUsingStmtHandlers();
-        void CollectLockStmtHandlers();
-        void CollectFixedStmtHandlers();
+        void CollectStmtHandlers();
+        void CollectAssertHandlers();
 
         template<typename type>
         bool ConvertRegistrationCheck(srcDispatch::srcSAXEventContext& ctx);

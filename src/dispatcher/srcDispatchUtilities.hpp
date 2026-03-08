@@ -58,6 +58,9 @@ namespace srcDispatch {
         // C# specific
         using_stmt, foreach, lock, fixed,
 
+        // Java specific
+        assert, synchronized_stmt,
+
         // preprocessor
         cppinclude, cppdirective, cppfile,
 

@@ -427,6 +427,10 @@ namespace srcDispatch {
                     ++ctx.triggerField[ParserState::lock];
                     DispatchEvent(ParserState::lock, ElementState::open);
                 } },
+                { "synchronized", [this]() {
+                    ++ctx.triggerField[ParserState::synchronized_stmt];
+                    DispatchEvent(ParserState::synchronized_stmt, ElementState::open);
+                } },
                 { "fixed", [this]() {
                     ++ctx.triggerField[ParserState::fixed];
                     DispatchEvent(ParserState::fixed, ElementState::open);
@@ -494,6 +498,10 @@ namespace srcDispatch {
                 { "return", [this]() {
                     ++ctx.triggerField[ParserState::returnstmt];
                     DispatchEvent(ParserState::returnstmt, ElementState::open);
+                } },
+                { "assert", [this]() {
+                    ++ctx.triggerField[ParserState::assert];
+                    DispatchEvent(ParserState::assert, ElementState::open);
                 } },
                 { "goto", [this]() {
                     ++ctx.triggerField[ParserState::gotostmt];
@@ -758,6 +766,10 @@ namespace srcDispatch {
                     DispatchEvent(ParserState::fixed, ElementState::close);
                     --ctx.triggerField[ParserState::fixed];
                 } },
+                { "synchronized", [this]() {
+                    DispatchEvent(ParserState::synchronized_stmt, ElementState::close);
+                    --ctx.triggerField[ParserState::synchronized_stmt];
+                } },
                 { "macro", [this]() {
                     DispatchEvent(ParserState::macro, ElementState::close);
                     --ctx.triggerField[ParserState::macro];
@@ -801,6 +813,10 @@ namespace srcDispatch {
                 { "return", [this]() {
                     --ctx.triggerField[ParserState::returnstmt];
                     DispatchEvent(ParserState::returnstmt, ElementState::close);
+                } },
+                { "assert", [this]() {
+                    --ctx.triggerField[ParserState::assert];
+                    DispatchEvent(ParserState::assert, ElementState::close);
                 } },
                 { "goto", [this]() {
                     --ctx.triggerField[ParserState::gotostmt];

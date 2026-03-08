@@ -26,6 +26,9 @@
 #include <csharp/LockStmtPolicy.hpp>
 #include <csharp/FixedStmtPolicy.hpp>
 
+#include <java/AssertPolicy.hpp>
+#include <java/SyncStmtPolicy.hpp>
+
 namespace srcDispatch {
 
     BlockPolicy::BlockPolicy(std::initializer_list<srcDispatch::PolicyListener*> listeners)
@@ -79,6 +82,10 @@ namespace srcDispatch {
             data.statements.emplace_back(ctx.diffStack.back().operation, policy->Data<LockData>());
         } else if(typeid(FixedStmtPolicy) == typeid(*policy)) {
             data.statements.emplace_back(ctx.diffStack.back().operation, policy->Data<FixedData>());
+        } else if(typeid(SyncStmtPolicy) == typeid(*policy)) {
+            data.statements.emplace_back(ctx.diffStack.back().operation, policy->Data<SyncData>());
+        } else if(typeid(AssertPolicy) == typeid(*policy)) {
+            data.statements.emplace_back(ctx.diffStack.back().operation, policy->Data<AssertData>());
         } else {
             throw srcDispatch::PolicyError(std::string("Unhandled Policy '") + typeid(*policy).name() + '\'');
         }
@@ -105,9 +112,8 @@ namespace srcDispatch {
         CollectCaseHandlers();
         CollectLabelHandlers();
 
-        CollectUsingStmtHandlers();
-        CollectLockStmtHandlers();
-        CollectFixedStmtHandlers();
+        CollectStmtHandlers();
+        CollectAssertHandlers();
     }
 
     template<typename type>
@@ -391,7 +397,7 @@ namespace srcDispatch {
         };
     }
 
-    void BlockPolicy::CollectUsingStmtHandlers() {
+    void BlockPolicy::CollectStmtHandlers() {
         using namespace srcDispatch;
         openEventMap[ParserState::using_stmt] = [this](srcSAXEventContext& ctx) {
             if(!depth) return;
@@ -401,10 +407,7 @@ namespace srcDispatch {
             }
             ctx.dispatcher->AddListenerDispatch(usingStmtPolicy.get());
         };
-    }
 
-    void BlockPolicy::CollectLockStmtHandlers() {
-        using namespace srcDispatch;
         openEventMap[ParserState::lock] = [this](srcSAXEventContext& ctx) {
             if(!depth) return;
 
@@ -413,10 +416,7 @@ namespace srcDispatch {
             }
             ctx.dispatcher->AddListenerDispatch(lockStmtPolicy.get());
         };
-    }
 
-    void BlockPolicy::CollectFixedStmtHandlers() {
-        using namespace srcDispatch;
         openEventMap[ParserState::fixed] = [this](srcSAXEventContext& ctx) {
             if(!depth) return;
 
@@ -424,6 +424,27 @@ namespace srcDispatch {
                 fixedStmtPolicy = make_unique_policy<FixedStmtPolicy>({this});
             }
             ctx.dispatcher->AddListenerDispatch(fixedStmtPolicy.get());
+        };
+
+        openEventMap[ParserState::synchronized_stmt] = [this](srcSAXEventContext& ctx) {
+            if(!depth) return;
+
+            if(!syncStmtPolicy) {
+                syncStmtPolicy = make_unique_policy<SyncStmtPolicy>({this});
+            }
+            ctx.dispatcher->AddListenerDispatch(syncStmtPolicy.get());
+        };
+    }
+
+    void BlockPolicy::CollectAssertHandlers() {
+        using namespace srcDispatch;
+        openEventMap[ParserState::assert] = [this](srcSAXEventContext& ctx) {
+            if(!depth) return;
+
+            if(!assertPolicy) {
+                assertPolicy = make_unique_policy<AssertPolicy>({this});
+            }
+            ctx.dispatcher->AddListenerDispatch(assertPolicy.get());
         };
     }
 
